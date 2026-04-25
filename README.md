@@ -38,9 +38,15 @@ window titled X at the top-right of the screen") without guessing.
 | `stream_list`     | List all known sessions.                                                  |
 | `stream_drop`     | Forget a finished session (frees its in-memory ring).                    |
 
-All non-streaming captures default to JPEG, quality 70, longest edge 1600px,
-which is a reasonable trade-off between fidelity and token cost. Streams
-default to JPEG quality 60 / longest edge 1280px.
+Defaults are tuned for legibility on 4K monitors:
+
+* Single screenshots — JPEG, quality 82, longest edge **2400px**.
+* Streams — JPEG, quality 72, longest edge **1920px**.
+* When `cursorRadius>0` the cursor crop is kept at native resolution
+  (no resize) unless you override `maxEdge` explicitly.
+
+Pass `maxEdge: 0` to disable resizing entirely; pass any positive value
+to override.
 
 ## Install
 
@@ -124,9 +130,15 @@ MIT.
 | `stream_list`     | Список всех сессий.                                                             |
 | `stream_drop`     | Забыть завершённую сессию (освобождает кольцо в памяти, файлы остаются).       |
 
-Дефолты: одиночные снимки — JPEG, качество 70, длинная сторона до 1600px.
-Стримы — JPEG качество 60, длинная сторона 1280px. Это разумный компромисс
-между качеством и расходом токенов.
+Дефолты подобраны под 4K-мониторы — текст на интерфейсах остаётся читаемым:
+
+* Одиночные снимки — JPEG, качество 82, длинная сторона **2400px**.
+* Стримы — JPEG, качество 72, длинная сторона **1920px**.
+* При `cursorRadius>0` обрезка вокруг курсора сохраняется в нативном
+  разрешении (без ресайза), если явно не задан `maxEdge`.
+
+`maxEdge: 0` полностью отключает уменьшение, любое положительное значение —
+переопределяет дефолт.
 
 ## Установка
 

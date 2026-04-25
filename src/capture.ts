@@ -48,8 +48,13 @@ export interface CaptureResult {
  * also handles cursor-region cropping and on-disk persistence. */
 export async function capture(opts: CaptureOptions): Promise<CaptureResult> {
   const fmt = opts.format ?? "jpeg";
-  const quality = clamp(opts.quality ?? 70, 1, 100);
-  const maxEdge = opts.maxEdge ?? 1600;
+  const quality = clamp(opts.quality ?? 82, 1, 100);
+  /* If the caller cropped a region around the cursor it's already small enough
+   * for the LLM context; don't downscale it further unless they explicitly ask
+   * for a maxEdge. Full-screen captures default to 2400px on the long edge,
+   * which keeps UI text legible on 4K monitors while staying token-friendly. */
+  const cropping = (opts.cursorRadius ?? 0) > 0;
+  const maxEdge = opts.maxEdge ?? (cropping ? 0 : 2400);
   const includeBase64 = opts.includeBase64 ?? true;
 
   const rawPng: Buffer = await capturePngBackend(opts.display);

@@ -51,11 +51,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
             default: 0,
           },
           format: { type: "string", enum: ["png", "jpeg", "webp"], default: "jpeg" },
-          quality: { type: "integer", minimum: 1, maximum: 100, default: 70 },
+          quality: { type: "integer", minimum: 1, maximum: 100, default: 82 },
           maxEdge: {
             type: "integer",
-            description: "Resize the longest edge to this many pixels. 0 disables resizing. Default 1600.",
-            default: 1600,
+            description: "Resize the longest edge to this many pixels. 0 disables resizing. " +
+              "Default 2400 for full screen; with cursorRadius>0 the cursor crop is kept at native resolution unless overridden.",
           },
           display: {
             type: "integer",
@@ -101,8 +101,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           },
           cursorRadius: { type: "integer", default: 0 },
           format: { type: "string", enum: ["png", "jpeg", "webp"], default: "jpeg" },
-          quality: { type: "integer", minimum: 1, maximum: 100, default: 60 },
-          maxEdge: { type: "integer", default: 1280 },
+          quality: { type: "integer", minimum: 1, maximum: 100, default: 72 },
+          maxEdge: {
+            type: "integer",
+            description: "Longest edge in px. Default 1920 for full-screen frames; cursor crops keep native resolution unless overridden.",
+          },
           ringCapacity: {
             type: "integer",
             description: "Maximum number of recent frames kept in memory. Older frames are evicted (still on disk).",
@@ -171,8 +174,8 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
           outDir: DEFAULT_OUT_DIR,
           cursorRadius: numArg(args, "cursorRadius", 0),
           format: strEnum(args, "format", ["png", "jpeg", "webp"] as const, "jpeg"),
-          quality: numArg(args, "quality", 70),
-          maxEdge: numArg(args, "maxEdge", 1600),
+          quality: numArg(args, "quality", 82),
+          maxEdge: optionalNumArg(args, "maxEdge"),
           display: args.display === undefined ? undefined : Number(args.display),
           includeBase64: args.includeBase64 !== false,
         });
@@ -185,13 +188,14 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
       }
 
       case "stream_start": {
+        const cursorRadius = numArg(args, "cursorRadius", 0);
         const r = startStream({
           intervalSeconds: numArg(args, "intervalSeconds", 1),
           durationSeconds: numArg(args, "durationSeconds", 10),
-          cursorRadius: numArg(args, "cursorRadius", 0),
+          cursorRadius,
           format: strEnum(args, "format", ["png", "jpeg", "webp"] as const, "jpeg"),
-          quality: numArg(args, "quality", 60),
-          maxEdge: numArg(args, "maxEdge", 1280),
+          quality: numArg(args, "quality", 72),
+          maxEdge: optionalNumArg(args, "maxEdge", cursorRadius > 0 ? 0 : 1920),
           ringCapacity: numArg(args, "ringCapacity", 60),
           outDir: DEFAULT_OUT_DIR,
         });
@@ -270,6 +274,17 @@ function strArg(args: Record<string, unknown>, key: string): string {
 }
 
 function numArg(args: Record<string, unknown>, key: string, def: number): number {
+  const v = args[key];
+  if (v === undefined || v === null) return def;
+  const n = Number(v);
+  if (!Number.isFinite(n)) throw new Error(`bad number for ${key}: ${v}`);
+  return n;
+}
+
+/* Variant that returns undefined when the argument is absent so the underlying
+ * capture() can apply context-sensitive defaults (e.g. don't resize a cursor
+ * crop, but resize a full-screen capture to 2400px). */
+function optionalNumArg(args: Record<string, unknown>, key: string, def?: number): number | undefined {
   const v = args[key];
   if (v === undefined || v === null) return def;
   const n = Number(v);
