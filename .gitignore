@@ -1,0 +1,10 @@
+node_modules/
+dist/
+captures/*
+!captures/.gitkeep
+.vscode/
+.idea/
+*.log
+*.tsbuildinfo
+.DS_Store
+Thumbs.db

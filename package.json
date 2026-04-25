@@ -1,0 +1,28 @@
+{
+  "name": "mcp-screenshot",
+  "version": "0.1.0",
+  "description": "Screen capture and timed-streaming MCP server with cursor context",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "mcp-screenshot": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc -w"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "screenshot-desktop": "^1.15.0",
+    "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.6.3"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}
